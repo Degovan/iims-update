@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Services\UserImage;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -44,6 +45,7 @@ class UserController extends Controller
     public function store(UserRequest $request)
     {
         $data = $request->all();
+        $data['photo'] = UserImage::upload($request->file('photo'));
         $data['password'] = Hash::make($request->password);
         $user = User::create($data);
 
@@ -98,6 +100,16 @@ class UserController extends Controller
         ]);
 
         $data = $request->all();
+
+        if($request->file('photo')) {
+            $request->validate([
+                'photo' => 'file|image|mimes:jpg,png,gif'
+            ]);
+
+            $data['photo'] = UserImage::upload($request->file('photo'));
+        } else {
+            unset($data['photo']);
+        }
 
         if ($request->email != $user->email) {
             $request->validate(['email' => 'unique:users,email']);

@@ -128,16 +128,11 @@
 
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{$data -> kategori_produk}}</td>
 
-						<!-- <td>{{$data -> barcode}}</td> -->
-
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">
 
 							<div class="barcode">
 
-								{!! DNS1D::getBarcodeHTML($data->barcode, "C128",1.4,22) !!}
-
-								<!-- <p class="pid">{{$data->barcode}}</p> -->
-
+								{!! DNS1D::getBarcodeHTML($data-> kode_produk, "C128",1.4,22) !!}
 							</div>
 
 						</td>

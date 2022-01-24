@@ -29,10 +29,6 @@
                         <th>No ITR</th>
                         <th>No PR</th>
                         <th>Tanggal</th>
-                        <th>Nama Vendor</th>
-                        <th>Vendor CP</th>
-                        <th>Produk</th>
-                        <th>Qty</th>
                         <th>Harga</th>
                         <th>Status</th>
                         <th class="center-dt">Aksi</th>
@@ -44,26 +40,34 @@
                         <th>No ITR</th>
                         <th>No PR</th>
                         <th>Tanggal</th>
-                        <th>Nama Vendor</th>
-                        <th>Vendor CP</th>
-                        <th>Produk</th>
-                        <th>Qty</th>
                         <th>Harga</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                 </tfoot>
                 <tbody>@php $i = 1; @endphp @foreach ($itr as $data)
+                    @php
+                        $products = App\PurchaseRequestProduct::join('produk', 'produk.id_produk', '=', 'purchase_request_products.product_id')
+                            ->where('purchase_request_products.pr_id', $data->pr_id)
+                            ->select([
+                                'purchase_request_products.qty', 'produk.nama_produk'
+                            ])
+                            ->get();
+
+                        $nama_produk = '';
+                        
+                        foreach($products as $product) {
+                            $nama_produk .= $product->nama_produk.', ';
+                        }
+
+                        $nama_produk    = substr($nama_produk, 0, -2);
+                    @endphp
                     <tr>
                         <td>{{$i++}}</td>
                         <td>{{$data->no_itr}}</td>
                         <td>{{$data->no_pr}}</td>
                         <td>{{$data->tanggal}}</td>
-                        <td>{{$data->nama_vendor}}</td>
-                        <td>{{$data->telp}}</td>
-                        <td>{{$data->nama_produk}}</td>
-                        <td>{{$data->qty}}</td>
-                        <td>{{$data->harga}}</td>
+                        <td>{{$data->total}}</td>
                         <td>{{$data->flag == 0 ? 'Aktif' : 'Approve'}}</td>
                         <td class="center-dt">
                             @if ($data->flag == 0)

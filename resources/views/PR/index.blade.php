@@ -29,10 +29,6 @@
                         <th>No</th>
                         <th>No PR</th>
                         <th>Tanggal</th>
-                        <th>Nama Vendor</th>
-                        <th>Vendor CP</th>
-                        <th>Produk</th>
-                        <th>Qty</th>
                         <th>Harga</th>
                         <th>Status</th>
                         <th class="center-dt">Aksi</th>
@@ -43,32 +39,26 @@
                         <th>No</th>
                         <th>No PR</th>
                         <th>Tanggal</th>
-                        <th>Nama Vendor</th>
-                        <th>Vendor CP</th>
-                        <th>Produk</th>
-                        <th>Qty</th>
                         <th>Harga</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                 </tfoot>
-                <tbody>@php $i = 1; @endphp @foreach ($pr as $data)
-                    <tr>
-                        <td>{{$i++}}</td>
-                        <td>{{$data -> no_pr}}</td>
-                        <td>{{$data -> tanggal}}</td>
-                        <td>{{$data -> nama_vendor}}</td>
-                        <td>{{$data -> telp}}</td>
-                        <td>{{$data -> nama_produk}}</td>
-                        <td>{{$data -> qty}}</td>
-                        <td>{{$data -> harga}}</td>
-                        <td>{{$data -> status == 0 ? 'Aktif' : 'Selesai'}}</td>
-                        <td class="center-dt">
-                            <a href="{{ route('updatePr',$data->id) }}" class="btn btn-outline-success btn-sm" style="font-size: 10px;"><i class="fas fa-pencil-alt"></i>&nbsp;Edit</a>
-                            <a href="{{ URL::to('purchase/cetak/'.$data->id.'/pr') }}" class="btn btn-outline-primary btn-sm" style="font-size: 10px;" target="_blank"><i class="fa fa-print"></i>&nbsp;Print</a>
-                            <a href="purchase/hapus/{{$data->id}}" class="btn btn-outline-danger btn-sm" style="font-size: 10px;"><i class="fas fa-trash-alt"></i>&nbsp;Hapus</a>
-                        </td>
-                    </tr>@endforeach
+                <tbody>
+                    @foreach ($pr as $data)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{$data -> no_pr}}</td>
+                            <td>{{$data -> tanggal}}</td>
+                            <td>{{$data -> total}}</td>
+                            <td>{{$data -> status == 0 ? 'Aktif' : 'Selesai'}}</td>
+                            <td class="center-dt">
+                                <a href="{{ route('updatePr',$data->id) }}" class="btn btn-outline-success btn-sm" style="font-size: 10px;"><i class="fas fa-pencil-alt"></i>&nbsp;Edit</a>
+                                <a href="{{ URL::to('purchase/cetak/'.$data->id.'/pr') }}" class="btn btn-outline-primary btn-sm" style="font-size: 10px;" target="_blank"><i class="fa fa-print"></i>&nbsp;Print</a>
+                                <a href="purchase/hapus/{{$data->id}}" class="btn btn-outline-danger btn-sm" style="font-size: 10px;"><i class="fas fa-trash-alt"></i>&nbsp;Hapus</a>
+                            </td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>

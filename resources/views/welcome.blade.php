@@ -164,14 +164,14 @@ a {
 	<div class="card card0 border-0">
 		<div class="row d-flex" style="margin-bottom: -70px;">
 			<div class="col-lg-6">
-				<div class="card1 pb-5" style="background-image:url('/assets/images/background-login.png'); width: 110%; height: 85.5%;" >
+				<div class="card1 pb-5" style="background-image:url('/assets/images/{{ $homepage->background }}'); width: 110%; height: 85.5%;" >
 					<div class="row">
-						<img src="asset/img/logo.png" style=" width: 60px; height: 50px;" class="logo">
+						<img src="{{ asset('assets/images/'.$homepage->logo.'') }}" style=" width: 60px; height: 50px;" class="logo">
 					</div>
 					<div class="row mt-4 mb-5 border-line">
 						<p src="" class="" >
-                            <h3 style="margin-left: 50px; margin-top: 30%; color: #297373;"><p>Selamat Datang<br>
-                                <small style="color: white;"><b style="text-decoration: underline;">Inventory Management System</b><br><b style="color: #f3c969;">PT</b></small>
+                            <h3 style="margin-left: 50px; margin-top: 30%; color: #297373;"><p>{{ $homepage->greeting }}<br>
+                                <small style="color: white;"><b style="text-decoration: underline;">{{ $homepage->content }}</b><br><b style="color: #f3c969;">{{ $homepage->footer }}</b></small>
                             </h3> 
                         </p>
 					</div>      
@@ -229,7 +229,7 @@ a {
 		</div>
 		<div class="bg-blue py-4">
 			<div class="row px-3">
-				<small class="ml-4 ml-sm-5 mb-2">Copyright &copy; 2021. ims.</small>
+				<small class="ml-4 ml-sm-5 mb-2">Copyright &copy; {{ date('Y') }}. {{ $homepage->copyright }}.</small>
 				<!-- <div class="social-contact ml-4 ml-sm-auto">
 					<span class="fa fa-facebook mr-4 text-sm"></span>
                     <span class="fa fa-google-plus mr-4 text-sm"></span>

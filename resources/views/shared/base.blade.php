@@ -20,6 +20,7 @@
 	<link href="{{asset('assets/css/sb-admin-2.min.css')}}" rel="stylesheet">
 	<link href="{{asset('assets/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
 	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+	@stack('style')
 </head>
 
 <body>
@@ -28,7 +29,7 @@
 		<!-- partial:partials/_sidebar.html -->
 		<aside class="mdc-drawer mdc-drawer--dismissible mdc-drawer--open">
 			<div class="mdc-drawer__header">
-				<a href="index.html" class="brand-logo"><img src="../assets/images/logo.svg" alt="logo">otanomulti.com</a>
+				<a href="index.html" class="brand-logo"><img src="{{ asset('assets/images/logo.png') }}" alt="logo">otanomulti.com</a>
 			</div>
 			<div class="mdc-drawer__content">
 				<div class="mdc-list-group">
@@ -146,6 +147,14 @@
 							</div>
 						</div>
 						@endif
+						{{-- untuk admin --}}
+						@if($lUser->roles()->get()[0]->name == 'admin')
+							<div class="mdc-list-item mdc-drawer-item">
+								<a class="mdc-drawer-link" href="/edit-homepage">
+									<i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">pages</i>
+									Edit Hompage </a>
+							</div>
+						@endif
 						<!-- <div class="mdc-list-item mdc-drawer-item">
 				<a class="mdc-drawer-link" href="https://www.bootstrapdash.com/demo/material-admin-free/jquery/documentation/documentation.html" target="_blank">
 				<i class="material-icons mdc-list-item__start-detail mdc-drawer-item-icon" aria-hidden="true">description</i>
@@ -245,6 +254,7 @@
 	<script src="{{asset('assets/js/demo/datatables-demo.js')}}"></script>
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 	@yield('javascript')
+	@stack('script')
 	<script type="text/javascript">
 		function removeActive(param) {
 			$("#mdc-role").removeClass('active');

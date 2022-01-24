@@ -6,7 +6,7 @@
 	</div>
 	<div class="card-body">
 
-		<form action="{{ route('users.update', $user->id) }}" method="post">
+		<form action="{{ route('users.update', $user->id) }}" method="post" enctype="multipart/form-data">
 			@method('PUT')
 			@include('pages.users.components.form')
 			<div class="form-group d-flex justify-content-between">

@@ -1,93 +1,282 @@
 @extends('shared.base')
 @section('content')
+@php
+    $vendors = App\PurchaseRequestProduct::join('vendor', 'vendor.id_vendor', '=', 'purchase_request_products.vendor_id')
+        ->distinct()
+        ->where('purchase_request_products.pr_id', $data['pr']->id)
+        ->select([
+            'vendor.*'
+        ])
+        ->get();
+
+    $x  = 0;
+@endphp
 <div class="card shadow mb-4">
     <div class="card-header py-1" style="text-align: center;">
         <h7 class="m-0 font-weight-bold text-primary">Update Data PR</h7>
     </div>
     <div class="card-body" style="margin-top: -20px;">
         <form action="{{route('purchaseSimpan')}}" method="post">{{ csrf_field() }}
-            <table class="table">
-                <div class="form-group row mb-2 mt-2" style="float: left;">
-                    <div class="col-sm-10"> <a type="submit" href="{{route('purchase')}}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-circle-left">&nbsp;Kembali</i></a>
+            <input type="hidden" name="id_pr" id="id_pr" value="{{ $data['pr']->id }}">
+            <input type="hidden" name="id_pembuat" id="id_pembuat" value="{{ $data['pr']->created_by }}">
+            <div class="form-group row mb-2 mt-2" style="float: left;">
+                <div class="col-sm-10"> <a type="submit" href="{{route('purchase')}}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-circle-left">&nbsp;Kembali</i></a>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="row my-3">
+                <div class="col-6">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text">No. PR</span>
+                        </div>
+                        <input type="text" name="nomor_pr" class="form-control form-control-sm" id="nomor_pr" value="{{ $data['pr']->no_pr }}" required>
+                      </div>
+                </div>
+                <div class="col-6">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Tanggal</span>
+                        </div>
+                        <input type="datetime-local" class="form-control form-control-sm" required="required" id="tanggal_pr" name="tanggal_pr" value="{{ $data['pr']->tanggal }}" required>
+                      </div>
+                </div>
+                <div class="col-6">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                          <span class="input-group-text">Req. By</span>
+                        </div>
+                        <input type="text" class="form-control form-control-sm"  value="{{ $data['pr']->requester }}" readonly>
                     </div>
                 </div>
-                <tr>
-                    <td>
-                        <input type="hidden" name="id_pembuat" id="id_pembuat" value="{{Auth::user()->id}}">
-                        <input type="hidden" name="id_pr" id="id_pr" value="{{$data['pr']->id}}">
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">No PR</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control form-control-sm" required="required" id="nomor_pr" name="nomor_pr" value="{{ $data['pr']->no_pr }}">
+                @if($data['pr']->approved_by)
+                    <div class="col-6">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                            <span class="input-group-text">Appr. By</span>
                             </div>
+                            <input type="text" class="form-control form-control-sm"  value="{{ $data['pr']->approved_by }}" readonly>
                         </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Tanggal</label>
-                            <div class="col-sm-10">
-                                <input type="datetime-local"  value="{{ $data['pr']->tanggal}}" class="form-control form-control-sm" required="required" id="tanggal_pr" name="tanggal_pr">
+                    </div>
+                @endif
+            </div>
+            <div class="vendor_wrap" data-number="0">
+                @foreach($vendors as $vendor)
+                    @if($x == 0)
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                    <span class="input-group-text">Nama Vendor</span>
+                                    </div>
+                                    <select name="vendor_id[]" class="form-control form-control-sm vendorId" data-number="{{ $x }}" id="vendor_id{{ $x }}" required>
+                                        <option value=""></option>
+                                        @foreach ($data['vendor'] as $v)
+                                            <option value="{{$v->id_vendor}}" {{ $v->id_vendor == $vendor->id_vendor ? 'selected' : NULL }}>{{$v->nama_vendor}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Nama Vendor</label>
-                            <div class="col-sm-10">
-                                <select name="vendor_id" class="form-control form-control-sm" id="vendor_id" onchange="getVendor('vendor');">
-                                    <option value=""></option>
-                                    @foreach ($data['vendor'] as $v)
-                                    @if($data['pr']->vendor_id == $v->id_vendor)
-                                    <option value="{{$v->id_vendor}}" selected>{{$v->nama_vendor}}</option>
+                            <div class="col-6">
+                                <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Contact Person</span>
+                                    </div>
+                                    <input type="text" class="form-control form-control-sm cp_vendor" name="cp_vendor" id="cp_vendor{{ $x }}" data-number="{{ $x }}" value="{{ $vendor->telp }}" readonly>
+                                    @if($x == 0)
+                                        <button type='button' class="add_item btn_xs btn btn-primary mb-1 float-right" id="buttonAddVendor" data-number="{{ $x }}">
+                                            <i class="fas fa-plus"></i> Tambah
+                                        </button>
                                     @else
-                                    <option value="{{$v->id_vendor}}">{{$v->nama_vendor}}</option>
+                                        <button type='button' class="remove_vendor btn_xs btn btn-danger">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     @endif
-                                    @endforeach
-                                </select>
-                                <!-- <input type="text" class="form-control form-control-sm" required="required" name="nama_vendor"> -->
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Vendor CP</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control form-control-sm" name="cp_vendor" id="cp_vendor" readonly>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Produk</label>
-                            <div class="col-sm-10">
-                                <select name="produk_id" id="produk_id" class="form-control form-control-sm" required onchange="getVendor('produk')">
-                                    <option value=""></option>
-                                    @foreach ($data['produk'] as $p )
-                                    @if($data['pr']->produk_id == $p->id_produk)
-                                    <option value="{{$p->id_produk}}" selected>{{$p->nama_produk}}</option>
-                                    @else
-                                    <option value="{{$p->id_produk}}">{{$p->nama_produk}}</option>
-                                    @endif
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Qty</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control form-control-sm" required="required" name="qty" id="qty" value="{{ $data['pr']->qty }}">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Harga</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control form-control-sm" required="required" name="harga" id="harga" readonly>
-                            </div>
-                        </div>
+                        <table class="table" id="productTable{{ $x }}" data-number="{{ $x }}">
+                            <thead>
+                                <th width="3%">No</th>
+                                <th width="20%">Produk</th>
+                                <th width="7%">Qty</th>
+                                <th>Harga</th>
+                                <th>Catatan</th>
+                                <th>Aksi</th>
+                            </thead>
+                            @if($x == 0)
+                                <tbody class="product_wrap" data-number="0" data-vendor="{{ $x }}">
+                            @else
+                                <tbody class="product_wrap{{ $x }}" data-number="0" data-vendor="{{ $x }}">
+                            @endif
+                                @php
+                                    $products = App\PurchaseRequestProduct::join('produk', 'produk.id_produk', '=', 'purchase_request_products.product_id')
+                                        ->where('purchase_request_products.pr_id', $data['pr']->id)
+                                        ->where('purchase_request_products.vendor_id', $vendor->id_vendor)
+                                        ->select([
+                                            'purchase_request_products.qty', 'produk.nama_produk', 'produk.harga',
+                                            'purchase_request_products.note', 'produk.id_produk'
+                                        ])
+                                        ->get();
 
-                        <div class="form-group row" style="float: right;">
-                            <label for="inputtext" class="col-sm-2 col-form-label"></label>
-                            <div class="col-sm-10">
-                                <button type="submit" class="btn btn-outline-success btn-sm" value="Update Data"><i class="fas fa-pen-alt">&nbsp;Update</i>
-                                </button>
+                                    $y  = 0;
+                                @endphp
+                                @foreach($products as $product)
+                                <tr>
+                                    <td>{{ $y + 1 }}</td>
+                                    <td>
+                                        <select name="produk_id[{{ $x }}][]" id="produk{{ $x }}{{ $y }}" class="form-control form-control-sm" required onchange="getProduk('{{ $x }}{{ $y }}')" data-number="{{ $x }}{{ $y }}">
+                                            <option value="" selected disabled>--- PILIH PRODUK ---</option>
+                                            @foreach ($data['produk'] as $p )
+                                            <option value="{{$p->id_produk}}" {{ $p->id_produk == $product->id_produk ? 'selected' : NULL  }}>{{$p->nama_produk}}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm" required="required" name="qty[{{ $x }}][]" id="qty{{ $x }}{{ $y }}" value="{{ $product->qty }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" required="required" name="harga[{{ $x }}][]" id="harga{{ $x }}{{ $y }}" value="{{ $product->harga }}" readonly>
+                                    </td>
+                                    <td>
+                                        <textarea name="note[{{ $x }}][]" id="note{{ $x }}{{ $y }}" class="form-control form-control-sm">{{ $product->note ?? NULL }}</textarea>
+                                    </td>
+                                    <td>
+                                        @if($x == 0 && $y == 0)
+                                            <button type='button' class="add_item btn_xs btn btn-primary" id="buttonAddProduct">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        @elseif($y == 0)
+                                            <button type='button' class="add_product btn_xs btn btn-primary" id="buttonAddProduct{{ $x }}">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        @else
+                                            <button type='button' class="remove_product btn_xs btn btn-danger">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @php
+                                    $y++;
+                                @endphp
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                        <span class="input-group-text">Nama Vendor</span>
+                                        </div>
+                                        <select name="vendor_id[]" class="form-control form-control-sm vendorId" data-number="{{ $x }}" id="vendor_id{{ $x }}" required>
+                                            <option value=""></option>
+                                            @foreach ($data['vendor'] as $v)
+                                                <option value="{{$v->id_vendor}}" {{ $v->id_vendor == $vendor->id_vendor ? 'selected' : NULL }}>{{$v->nama_vendor}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Contact Person</span>
+                                        </div>
+                                        <input type="text" class="form-control form-control-sm cp_vendor" name="cp_vendor" id="cp_vendor{{ $x }}" data-number="{{ $x }}" value="{{ $vendor->telp }}" readonly>
+                                        @if($x == 0)
+                                            <button type='button' class="add_item btn_xs btn btn-primary mb-1 float-right" id="buttonAddVendor" data-number="{{ $x }}">
+                                                <i class="fas fa-plus"></i> Tambah
+                                            </button>
+                                        @else
+                                            <button type='button' class="remove_vendor btn_xs btn btn-danger">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
+                            <table class="table" id="productTable{{ $x }}" data-number="{{ $x }}">
+                                <thead>
+                                    <th width="3%">No</th>
+                                    <th width="20%">Produk</th>
+                                    <th width="7%">Qty</th>
+                                    <th>Harga</th>
+                                    <th>Catatan</th>
+                                    <th>Aksi</th>
+                                </thead>
+                                <tbody class="product_wrap{{ $x }}" data-number="0" data-vendor="{{ $x }}">
+                                    @php
+                                        $products = App\PurchaseRequestProduct::join('produk', 'produk.id_produk', '=', 'purchase_request_products.product_id')
+                                            ->where('purchase_request_products.pr_id', $data['pr']->id)
+                                            ->where('purchase_request_products.vendor_id', $vendor->id_vendor)
+                                            ->select([
+                                                'purchase_request_products.qty', 'produk.nama_produk', 'produk.harga',
+                                                'purchase_request_products.note', 'produk.id_produk'
+                                            ])
+                                            ->get();
+            
+                                        $y  = 0;
+                                    @endphp
+                                    @foreach($products as $product)
+                                    <tr>
+                                        <td>{{ $y + 1 }}</td>
+                                        <td>
+                                            <select name="produk_id[{{ $x }}][]" id="produk{{ $x }}{{ $y }}" class="form-control form-control-sm" required onchange="getProduk('{{ $x }}{{ $y }}')" data-number="{{ $x }}{{ $y }}">
+                                                <option value="" selected disabled>--- PILIH PRODUK ---</option>
+                                                @foreach ($data['produk'] as $p )
+                                                <option value="{{$p->id_produk}}" {{ $p->id_produk == $product->id_produk ? 'selected' : NULL  }}>{{$p->nama_produk}}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm" required="required" name="qty[{{ $x }}][]" id="qty{{ $x }}{{ $y }}" value="{{ $product->qty }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" required="required" name="harga[{{ $x }}][]" id="harga{{ $x }}{{ $y }}" value="{{ $product->harga }}" readonly>
+                                        </td>
+                                        <td>
+                                            <textarea name="note[{{ $x }}][]" id="note{{ $x }}{{ $y }}" class="form-control form-control-sm">{{ $product->note ?? NULL }}</textarea>
+                                        </td>
+                                        <td>
+                                            @if($y == 0)
+                                                <button type='button' class="add_product btn_xs btn btn-primary" id="buttonAddProduct{{ $x - 1 }}">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            @else
+                                                <button type='button' class="remove_product btn_xs btn btn-danger">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @php
+                                        $y++;
+                                    @endphp
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                    </td>
-                </tr>
-            </table>
+                    @endif
+                    @php
+                        $x++;
+                    @endphp
+                @endforeach
+            </div>
+            <div class="form-group">
+                <div class="form-group">
+                    <label for="main_note" class="col-sm-2 col-form-label">Catatan Utama</label>
+                    <textarea name="main_note" id="main_note" class="form-control">{{ $data['pr']->note ?? NULL }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row" style="float: right;">
+                <label for="inputtext" class="col-sm-2 col-form-label"></label>
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-outline-success btn-sm" value="Update Data"><i class="fas fa-pen-alt">&nbsp;Edit</i>
+                    </button>
+                </div>
+            </div>
         </form>
     </div>
 </div>
@@ -95,33 +284,264 @@
 
 @section('javascript')
 <script type="text/javascript">
-    $(document).ready(function() {
-        $('#vendor_id').select2();
-        $('#produk_id').select2();
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
+    // add product
+    const addVendor = () => {
+        var wrapper = $(".vendor_wrap");
+
+        x = '{{ $x - 1 }}';
+
+        var add_button = $('#buttonAddVendor');
+
+        $(add_button).click(function(e) {
+            e.preventDefault();
+
+            x++;
+            $(wrapper).append(`
+                <div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                <span class="input-group-text">Nama Vendor</span>
+                                </div>
+                                <select name="vendor_id[]" class="form-control form-control-sm vendorId" data-number="${x}" id="vendor_id${x}" required>
+                                    <option value=""></option>
+                                    @foreach ($data['vendor'] as $v)
+                                        <option value="{{$v->id_vendor}}">{{$v->nama_vendor}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Contact Person</span>
+                                </div>
+                                <input type="text" class="form-control form-control-sm cp_vendor" name="cp_vendor" id="cp_vendor${x}" data-number="${x}" readonly>
+                                <button type='button' class="remove_vendor btn_xs btn btn-danger">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table" id="productTable${x}" data-number="${x}">
+                        <thead>
+                            <th width="3%">No</th>
+                            <th width="20%">Produk</th>
+                            <th width="7%">Qty</th>
+                            <th>Harga</th>
+                            <th>Catatan</th>
+                            <th>Aksi</th>
+                        </thead>
+                        <tbody class="product_wrap${x}" data-number="0" data-vendor="${x}">
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <select name="produk_id[${x}][]" id="produk${x}0" class="form-control form-control-sm" required onchange="getProduk('${x}0')" data-number="${x}0">
+                                        <option value="" selected disabled>--- PILIH PRODUK ---</option>
+                                        @foreach ($data['produk'] as $p )
+                                        <option value="{{$p->id_produk}}">{{$p->nama_produk}}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" required="required" name="qty[${x}][]" id="qty${x}0">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" required="required" name="harga[${x}][]" id="harga${x}0" readonly>
+                                </td>
+                                <td>
+                                    <textarea name="note[${x}][]" id="note${x}0" class="form-control form-control-sm"></textarea>
+                                </td>
+                                <td>
+                                    <button type='button' class="add_product btn_xs btn btn-primary" id="buttonAddProduct${x}">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `);
+
         });
-        getVendor('vendor');
 
-        setTimeout(() => {
-            getVendor('produk');            
-        }, 800);     
+        function getProduk(number) {
+            var id = $("#produk"+number).val();
 
-    //    var d =  $("#tanggal_pr").val();
-    //     $("#tanggal_pr").val(d.toISOString().slice(0,16));
-        
-    });
-
-    function getVendor(table) {
-        var id;
-        if (table == 'vendor') {
-            id = $("#vendor_id").val();
-
-        } else {
-            id = $("#produk_id").val();
+            if (id != "") {
+                $.ajax({
+                    url: "{{ url ('ajax_dynamic') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        id: id,
+                        table: 'produk',
+                        _token: "{{csrf_token()}}"
+                    },
+                    success: function(data) {
+                        $("#harga"+number).val(data.harga);
+                        $("#qty"+number).val(data.qty);
+                    },
+                    error: function(e) {
+                        console.log(e);
+                    },
+                });
+            } else {
+                return false;
+            }
         }
+
+        $(wrapper).on("click", `.add_product`, function(e) {
+            y = $(`.product_wrap${x}`).data('number');
+
+            y++;
+
+            $(`.product_wrap${x}`).append(`
+                <tr>
+                    <td>${y + 1}</td>
+                    <td>
+                        <select name="produk_id[${x}][]" id="produk${x}${y}" class="form-control form-control-sm" required onchange="getProduk('${x}${y}')" data-number="${x}${y}">
+                            <option value="" selected disabled>--- PILIH PRODUK ---</option>
+                            @foreach ($data['produk'] as $p )
+                            <option value="{{$p->id_produk}}">{{$p->nama_produk}}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm" required="required" name="qty[${x}][]" id="qty${x}${y}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm" required="required" name="harga[${x}][]" id="harga${x}${y}" readonly>
+                    </td>
+                    <td>
+                        <textarea name="note[${x}][]" id="note${x}${y}" class="form-control form-control-sm"></textarea>
+                    </td>
+                    <td>
+                        <button type='button' class="remove_product btn_xs btn btn-danger">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+        
+        $(wrapper).on("click", ".remove_product", function(e) {
+            e.preventDefault();
+            $(this).parent('td').parent('tr').remove();
+            y--;
+        });
+
+        $(wrapper).on("click", ".remove_vendor", function(e) {
+            e.preventDefault();
+            $(this).parent('div').parent('div').parent('div').parent('div').remove();
+            x--;
+        });
+
+        $(wrapper).on("change", ".vendorId", function(e) {
+            e.preventDefault();
+
+            var id      = $(this).val();
+            var number  = $(this).data('number');
+
+            $.ajax({
+                url: "{{ url ('ajax_dynamic') }}",
+                type: "POST",
+                dataType: 'json',
+                data: {
+                    id: id,
+                    table: 'vendor',
+                    _token: "{{csrf_token()}}"
+                },
+                success: function(data) {
+                    $(`#cp_vendor${number}`).val(data.telp);
+                },
+                error: function(e) {
+                    console.log(e);
+                },
+            });
+        });
+    }
+    
+    // add product
+    const addProduct = () => {
+        var wrapper = $(".product_wrap");
+
+        var add_button = $("#buttonAddProduct");
+
+        v = wrapper.data('vendor');
+        w = wrapper.data('number');
+
+        $(add_button).click(function(e) {
+            e.preventDefault();
+
+            w++;
+            $(wrapper).append(`
+                <tr>
+                    <td>${w + 1}</td>
+                    <td>
+                        <select name="produk_id[0][]" id="produk${v}${w}" class="form-control form-control-sm" required onchange="getProduk('${v}${w}')" data-number="${v}${w}">
+                            <option value="" selected disabled>--- PILIH PRODUK ---</option>
+                            @foreach ($data['produk'] as $p )
+                            <option value="{{$p->id_produk}}">{{$p->nama_produk}}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm" required="required" name="qty[0][]" id="qty${v}${w}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm" required="required" name="harga[0][]" id="harga${v}${w}" readonly>
+                    </td>
+                    <td>
+                        <textarea name="note[0][]" id="note${v}${w}" class="form-control form-control-sm"></textarea>
+                    </td>
+                    <td>
+                        <button type='button' class="remove_product btn_xs btn btn-danger">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+
+        $(wrapper).on("click", ".remove_product", function(e) {
+            e.preventDefault();
+            $(this).parent('td').parent('tr').remove();
+            w--;
+        });
+
+        function getProduk(number) {
+            var id = $("#produk"+number).val();
+
+            if (id != "") {
+                $.ajax({
+                    url: "{{ url ('ajax_dynamic') }}",
+                    type: "POST",
+                    dataType: 'json',
+                    data: {
+                        id: id,
+                        table: 'produk',
+                        _token: "{{csrf_token()}}"
+                    },
+                    success: function(data) {
+                        $("#harga"+number).val(data.harga);
+                        $("#qty"+number).val(data.qty);
+                    },
+                    error: function(e) {
+                        console.log(e);
+                    },
+                });
+            } else {
+                return false;
+            }
+        }
+    }
+
+    function getProduk(number) {
+        var id = $("#produk"+number).val();
+
+        console.log(id);
 
         if (id != "") {
             $.ajax({
@@ -130,19 +550,12 @@
                 dataType: 'json',
                 data: {
                     id: id,
-                    table: table,
+                    table: 'produk',
                     _token: "{{csrf_token()}}"
                 },
                 success: function(data) {
-                    console.log(data);
-                    if (table == 'vendor') {
-                        $("#cp_vendor").val(data.telp);
-                    }
-
-                    if (table == 'produk') {
-                        $("#harga").val(data.harga);
-                        // $("#qty").val(data.qty);
-                    }
+                    $("#harga"+number).val(data.harga);
+                    $("#qty"+number).val(data.qty);
                 },
                 error: function(e) {
                     console.log(e);
@@ -152,5 +565,42 @@
             return false;
         }
     }
+
+    $(document).ready(function() {
+        addProduct();
+        addVendor();
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $('.vendorId').change(function (e) { 
+            e.preventDefault();
+
+            var id      = $(this).val();
+            var number  = $(this).data('number');
+
+            $.ajax({
+                url: "{{ url ('ajax_dynamic') }}",
+                type: "POST",
+                dataType: 'json',
+                data: {
+                    id: id,
+                    table: 'vendor',
+                    _token: "{{csrf_token()}}"
+                },
+                success: function(data) {
+                    $(`#cp_vendor${number}`).val(data.telp);
+                },
+                error: function(e) {
+                    console.log(e);
+                },
+            });
+        });
+
+        
+    });
 </script>
 @endsection

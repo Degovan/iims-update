@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Model\ItrModel;
+use App\PurchaseRequest;
+use App\PurchaseRequestProduct;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Redirect;
 
 class PritControllers extends Controller
 {
@@ -14,16 +17,10 @@ class PritControllers extends Controller
         $cari = $request->cari;
 
         $data = DB::table('purchase_request as pr')
-            ->join('vendor as v', "v.id_vendor", "=", "pr.vendor_id")
-            ->join('produk as p', "p.id_produk", "=", "pr.produk_id")
-            ->select("pr.id", "pr.status", "pr.tanggal", "pr.no_pr", "v.nama_vendor", "v.telp", "pr.qty", "p.harga", "p.nama_produk")
             ->where(function ($data) use ($cari) {
                 if (!empty($cari)) {
                     $data->where('pr.no_pr', 'LIKE', '%' . $cari . '%')
-                        ->orWhere('v.nama_vendor', 'LIKE', '%' . $cari . '%')
-                        ->orWhere('v.telp', 'LIKE', '%' . $cari . '%')
-                        ->orWhere('p.nama_produk', 'LIKE', '%' . $cari . '%')
-                        ->orWhere('pr.qty', 'LIKE', '%' . $cari . '%');
+                        ->orWhere('pr.total', 'LIKE', '%' . $cari . '%');
                 }
             })
             ->get();
@@ -44,20 +41,147 @@ class PritControllers extends Controller
     {
         $id = $request->id_pr;
 
-        $insert = [
-            'no_pr' => $request->nomor_pr,
-            'tanggal' => date("Y-m-d H:i:s", strtotime($request->tanggal_pr)),
-            'vendor_id' => $request->vendor_id,
-            'produk_id' => $request->produk_id,
-            'created_by' => $request->id_pembuat,
-            'qty' => $request->qty
-        ];
+        $product_id = $request->produk_id;
+        $qty        = $request->qty;
+
+        $total  = 0;
+
         if ($id) {
-            DB::table('purchase_request')->where("id", $id)->update($insert);
             $msg = "updated";
+
+            $harga          = $request->harga;
+            $created_by     = $request->id_pembuat;
+            $main_note      = $request->main_note ?? NULL;
+            $no_pr          = $request->nomor_pr;
+            $note           = $request->note;
+            $product_id     = $request->produk_id;
+            $qty            = $request->qty;
+            $tanggal        = date("Y-m-d H:i:s", strtotime($request->tanggal_pr));
+            $vendor_id      = $request->vendor_id;
+
+            $total  = 0;
+
+            $data   = [
+                'created_by'    => $created_by,
+                'no_pr'         => $no_pr,
+                'note'          => $main_note,
+                'note'          => $main_note,
+                'tanggal'       => $tanggal,
+                'total'         => $total,
+            ];
+
+            PurchaseRequest::where('id', $id)->update($data);
+
+            PurchaseRequestProduct::where('pr_id', $id)->delete();
+
+            for($i = 0; $i < count($vendor_id); $i++) {
+                for($j = 0; $j < count($product_id[$i]); $j++) {
+
+                    if(array_key_exists($i, $note)) {
+                        if(array_key_exists($j, $note[$i])) {
+                            $catatan = $note[$i][$j];
+                        } else {
+                            $catatan = NULL;
+                        }
+                    } else {
+                        $catatan = NULL;
+                    }
+                    
+                    $data   = [
+                        'pr_id'         => $id,
+                        'note'          => $catatan,
+                        'product_id'    => $product_id[$i][$j],
+                        'qty'           => $qty[$i][$j],
+                        'vendor_id'     => $vendor_id[$i],
+                    ];
+
+                    PurchaseRequestProduct::create($data);
+
+                    $harga  = DB::table('produk')
+                        ->where('id_produk', $product_id[$i][$j])
+                        ->first()
+                        ->harga;
+
+                    $harga  = ($harga * $qty[$i][$j]);
+
+                    $total  += $harga;
+                }
+            }
+
+            $data   = [
+                'total' => $total,
+            ];
+
+            PurchaseRequest::where('id', $id)
+                ->update($data);
         } else {
             $msg = "saved";
-            DB::table('purchase_request')->insert($insert);
+
+            $harga          = $request->harga;
+            $created_by     = $request->id_pembuat;
+            $main_note      = $request->main_note ?? NULL;
+            $no_pr          = $request->nomor_pr;
+            $note           = $request->note;
+            $produk_id      = $request->produk_id;
+            $qty            = $request->qty;
+            $tanggal        = date("Y-m-d H:i:s", strtotime($request->tanggal_pr));
+            $vendor_id      = $request->vendor_id;
+
+            $total  = 0;
+
+            $data   = [
+                'created_by'    => $created_by,
+                'no_pr'         => $no_pr,
+                'note'          => $main_note,
+                'note'          => $main_note,
+                'tanggal'       => $tanggal,
+                'total'         => $total,
+            ];
+
+            $pr = PurchaseRequest::create($data);
+
+            $pr_id  = $pr->id;
+            
+            for($i = 0; $i < count($vendor_id); $i++) {
+                for($j = 0; $j < count($product_id[$i]); $j++) {
+
+                    if(array_key_exists($i, $note)) {
+                        if(array_key_exists($j, $note[$i])) {
+                            $catatan = $note[$i][$j];
+                        } else {
+                            $catatan = NULL;
+                        }
+                    } else {
+                        $catatan = NULL;
+                    }
+                    
+                    $data   = [
+                        'pr_id'         => $pr_id,
+                        'note'          => $catatan,
+                        'product_id'    => $product_id[$i][$j],
+                        'qty'           => $qty[$i][$j],
+                        'vendor_id'     => $vendor_id[$i],
+                    ];
+
+                    PurchaseRequestProduct::create($data);
+
+                    $harga  = DB::table('produk')
+                        ->where('id_produk', $product_id[$i][$j])
+                        ->first()
+                        ->harga;
+
+                    $harga  = ($harga * $qty[$i][$j]);
+
+                    $total  += $harga;
+                }
+            }
+
+            $data   = [
+                'total' => $total,
+            ];
+
+            PurchaseRequest::where('id', $pr_id)
+                ->update($data);
         }
 
         return redirect('/purchase')->with('alert', [
@@ -68,10 +192,22 @@ class PritControllers extends Controller
 
     public function update_pr($id)
     {
-        $vendor = DB::table('vendor')->select('id_vendor', 'nama_vendor')->get();
-        $produk = DB::table('produk')->select('id_produk', 'nama_produk')->get();
-        $ret = DB::table('purchase_request')->where('id', $id)->first();
-        $ret->tanggal = date("Y-m-d\TH:i:s", strtotime($ret->tanggal));
+        $vendor         = DB::table('vendor')->select('id_vendor', 'nama_vendor')->get();
+        $produk         = DB::table('produk')->select('id_produk', 'nama_produk')->get();
+        $ret            = DB::table('purchase_request')->where('id', $id)->first();
+        $ret->tanggal   = date("Y-m-d\TH:i:s", strtotime($ret->tanggal));
+
+        $ret->requester = User::where('id', $ret->created_by)
+            ->first()
+            ->name;
+
+        if($ret->acc_by) {
+            $ret->approved_by = User::where('id', $ret->acc_by)
+                ->first()
+                ->name;
+        } else {
+            $ret->approved_by = NULL;
+        }
 
         $data['vendor'] = $vendor;
         $data['produk'] = $produk;
@@ -97,12 +233,9 @@ class PritControllers extends Controller
     {
         if ($jenis == 'pr') {
            
-            $data = DB::table('purchase_request as pr')
-            ->join('vendor as v', "v.id_vendor", "=", "pr.vendor_id")
-            ->join('produk as p', "p.id_produk", "=", "pr.produk_id")
-            ->select("pr.id", "pr.status", "pr.tanggal", "pr.no_pr", "v.nama_vendor", "v.telp", "pr.qty", "p.harga", "p.nama_produk")
-            ->where('pr.id', $id)
-            ->first();
+            $data = DB::table('purchase_request')
+                ->where('id', $id)
+                ->first();
             $data->jenis = 'pr';
             $data->title = "PUCHASE REQUEST";
         }
@@ -110,9 +243,7 @@ class PritControllers extends Controller
         if ($jenis == 'itr') {                           
            $data = DB::table('itr as i')
             ->join('purchase_request as pr', 'pr.id', '=', 'i.id_pr')
-            ->join('vendor as v', "v.id_vendor", "=", "pr.vendor_id")
-            ->join('produk as p', "p.id_produk", "=", "pr.produk_id")
-            ->select("i.id", "i.status", "i.flag", "i.tanggal_itr as tanggal", "i.no_itr", "pr.no_pr", "v.nama_vendor", "v.telp", "i.qty", "p.harga", "p.nama_produk")
+            ->select("i.status", "i.flag", "i.tanggal_itr as tanggal", "i.no_itr", "pr.no_pr", "pr.id as id", 'pr.created_by', 'pr.acc_by', 'pr.note')
             ->where('i.id', $id)
             ->first();
 
@@ -152,6 +283,15 @@ class PritControllers extends Controller
                 ->where('do.id', $id)
                 ->first();
             $ret->tanggal_do = date("Y-m-d\TH:i:s", strtotime($ret->tanggal_do));
+        } else if($tb == 'list_pr') {
+            $ret    = PurchaseRequestProduct::join('produk', 'produk.id_produk', '=', 'purchase_request_products.product_id')
+                ->join('vendor', "vendor.id_vendor", "=", "purchase_request_products.vendor_id")
+                ->select([
+                    'purchase_request_products.id', 'purchase_request_products.qty', 'produk.nama_produk', 'produk.harga',
+                    'purchase_request_products.note', 'vendor.nama_vendor', 'purchase_request_products.is_checked'
+                ])
+                ->where('purchase_request_products.pr_id', $id)
+                ->get();
         } else {
             $ret =  DB::table('purchase_request as pr')
                 ->join('vendor as v', "v.id_vendor", "=", "pr.vendor_id")
@@ -170,15 +310,10 @@ class PritControllers extends Controller
         $data =
             DB::table('itr as i')
             ->join('purchase_request as pr', 'pr.id', '=', 'i.id_pr')
-            ->join('vendor as v', "v.id_vendor", "=", "pr.vendor_id")
-            ->join('produk as p', "p.id_produk", "=", "pr.produk_id")
-            ->select("i.id", "i.status", "i.flag", "i.tanggal_itr as tanggal", "i.no_itr", "pr.no_pr", "v.nama_vendor", "v.telp", "i.qty", "p.harga", "p.nama_produk")
+            ->select("i.id", "i.status", "i.flag", "i.tanggal_itr as tanggal", "i.no_itr", "pr.no_pr", "pr.total", 'pr.id as pr_id')
             ->where(function ($data) use ($cari) {
                 if (!empty($cari)) {
                     $data->where('pr.no_pr', 'LIKE', '%' . $cari . '%')
-                        ->orWhere('v.nama_vendor', 'LIKE', '%' . $cari . '%')
-                        ->orWhere('v.telp', 'LIKE', '%' . $cari . '%')
-                        ->orWhere('p.nama_produk', 'LIKE', '%' . $cari . '%')
                         ->orWhere('i.qty', 'LIKE', '%' . $cari . '%');
                 }
             })
@@ -204,57 +339,143 @@ class PritControllers extends Controller
         $pr  = DB::table('purchase_request')->where('status', 0)->select('id', 'no_pr')->get();
         $itr  = DB::table('itr')->where('id', $id)->first();
         $itr->tanggal_itr = date("Y-m-d\TH:i:s", strtotime($itr->tanggal_itr));
-        $itr->valid_itr = explode(";", $itr->valid_itr);
 
         $vendor = DB::table('vendor')->select('id_vendor', 'nama_vendor')->get();
         $produk = DB::table('produk')->select('id_produk', 'nama_produk')->get();
+
+        $prList = PurchaseRequestProduct::join('produk', 'produk.id_produk', '=', 'purchase_request_products.product_id')
+            ->join('vendor', "vendor.id_vendor", "=", "purchase_request_products.vendor_id")
+            ->select([
+                'purchase_request_products.id', 'purchase_request_products.qty', 'produk.nama_produk', 'produk.harga',
+                'purchase_request_products.note', 'vendor.nama_vendor', 'purchase_request_products.is_checked'
+            ])
+            ->where('purchase_request_products.pr_id', $itr->id_pr)
+            ->get();
+
         $data['vendor'] = $vendor;
         $data['produk'] = $produk;
-        $data['pr'] = $pr;
-        $data['itr'] = $itr;
+        $data['pr']     = $pr;
+        $data['prList'] = $prList;
+        $data['itr']    = $itr;
         return view('ITR.edit', ['data' => $data]);
     }
 
     public function simpan_itr(Request $request)
     {
-        $no_itr = $request->nomor_itr;
-        $tgl_itr = $request->tanggal_itr;
-        $id_pr = $request->nomor_pr;
-        $qty = $request->qty;
-        $ket = $request->simpan;
-
-        //     ALTER TABLE `itr`
-        // ADD COLUMN `valid_itr` VARCHAR(255) NULL DEFAULT NULL AFTER `flag`;
-
-        $iu_itr = [
-            'qty' => $qty,
-            'no_itr' => $no_itr,
-            'tanggal_itr' => $tgl_itr,
-            'id_pr' => $id_pr,
-            'id_validator' => $request->id_validator,
-            'valid_itr' => null
-        ];
-
-        // return json_encode($request->all());
-        $is_valid = $request->valid_itr;
-        if (isset($is_valid)) {
-            $iu_itr['valid_itr'] = implode(";", $is_valid);
-        }
-
-
-
-        if ($ket == 1) {
-            DB::table('purchase_request')->where('id', $id_pr)->update(['status' => 1]);
-            $iu_itr['flag'] = 1;
-        }
-
         $msg = "saved";
         $id = $request->id_itr;
         if (!empty($id)) {
-            ItrModel::where('id', $id)->update($iu_itr);
+            $id_validator   = $request->id_validator;
+            $nomor_itr      = $request->nomor_itr;
+            $nomor_pr       = $request->nomor_pr;
+            $prr_id         = $request->prr_id;
+            $tanggal_itr    = $request->tanggal_itr;
+
+            $jumlahProduk = PurchaseRequestProduct::where('purchase_request_products.pr_id', $nomor_pr)
+                ->count();
+
+            if(count($prr_id) == $jumlahProduk) {
+                $data   = [
+                    'is_checked' => 1
+                ];
+
+                PurchaseRequestProduct::where('pr_id', $nomor_pr)
+                    ->update($data);
+
+                $data   = [
+                    'status'    => 1,
+                    'acc_by'    => $id_validator
+                ];
+
+                PurchaseRequest::where('id', $nomor_pr)
+                    ->update($data);
+
+                $data   = [
+                    'flag'          => 1,
+                    'id_validator'  => $id_validator,
+                    'no_itr'        => $nomor_itr,
+                    'id_pr'         => $nomor_pr,
+                    'tanggal_itr'   => $tanggal_itr,
+                ];
+
+                ItrModel::where('id', $id)->update($data);
+            } else {
+                for($i = 0; $i < count($prr_id); $i++) {
+                    $data   = [
+                        'is_checked' => 1
+                    ];
+
+                    PurchaseRequestProduct::where('id', $prr_id[$i])
+                        ->update($data);
+                }
+
+                $data   = [
+                    'flag'          => 0,
+                    'id_validator'  => $id_validator,
+                    'no_itr'        => $nomor_itr,
+                    'id_pr'         => $nomor_pr,
+                    'tanggal_itr'   => $tanggal_itr,
+                ];
+
+                ItrModel::where('id', $id)->update($data);
+            }
+            
             $msg = 'updated';
         } else {
-            ItrModel::insert($iu_itr);
+            $id_validator   = $request->id_validator;
+            $nomor_itr      = $request->nomor_itr;
+            $nomor_pr       = $request->nomor_pr;
+            $prr_id         = $request->prr_id;
+            $tanggal_itr    = $request->tanggal_itr;
+
+            $jumlahProduk = PurchaseRequestProduct::where('purchase_request_products.pr_id', $nomor_pr)
+                ->count();
+
+            if(count($prr_id) == $jumlahProduk) {
+                $data   = [
+                    'is_checked' => 1
+                ];
+
+                PurchaseRequestProduct::where('pr_id', $nomor_pr)
+                    ->update($data);
+
+                $data   = [
+                    'status'    => 1,
+                    'acc_by'    => $id_validator
+                ];
+
+                PurchaseRequest::where('id', $nomor_pr)
+                    ->update($data);
+
+                $data   = [
+                    'flag'          => 1,
+                    'id_validator'  => $id_validator,
+                    'no_itr'        => $nomor_itr,
+                    'id_pr'         => $nomor_pr,
+                    'tanggal_itr'   => $tanggal_itr,
+                ];
+
+                ItrModel::create($data);
+            } else {
+                for($i = 0; $i < count($prr_id); $i++) {
+                    $data   = [
+                        'is_checked' => 1
+                    ];
+
+                    PurchaseRequestProduct::where('id', $prr_id[$i])
+                        ->update($data);
+                }
+
+                $data   = [
+                    'flag'          => 0,
+                    'id_validator'  => $id_validator,
+                    'no_itr'        => $nomor_itr,
+                    'id_pr'         => $nomor_pr,
+                    'tanggal_itr'   => $tanggal_itr,
+                ];
+
+                ItrModel::create($data);
+            }
         }
 
         return redirect('/itr')->with('alert', [

@@ -48,7 +48,7 @@
 					<tr>
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{ $loop->index + 1 }}</td>
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{ $user->name }}</td>
-						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;"><img src="{{url('/data_file/'.$user -> photo)}}" width="80px" alt=""></td>
+						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;"><img src="{{url('/assets/images/users/' . ($user->photo ?? 'noimage.png'))}}" width="80px" alt=""></td>
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{ $user->email }}</td>
 						<td class="" style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">
 							<a href="{{ route('users.edit', $user->id) }}" class="btn btn-success btn-sm" style="font-size: 10px;">

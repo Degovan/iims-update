@@ -26,6 +26,12 @@
 							</div>
 						</div>
 						<div class="form-group row">
+							<label for="inputtext" class="col-sm-2 col-form-label">Email Vendor</label>
+							<div class="col-sm-10">
+								<input type="email" class="form-control form-control-sm" required="required" name="email" value={{ $data->email }}>
+							</div>
+						</div>
+						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Alamat vendor</label>
 							<div class="col-sm-10">
 								<input type="text" class="form-control form-control-sm" required="required" name="alamat_vendor" value="{{ $data->alamat_vendor }}">

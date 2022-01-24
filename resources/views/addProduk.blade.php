@@ -1,5 +1,25 @@
 @extends('shared.base')
 @section('content')
+@push('style')
+	{{-- CSS --}}
+	<style>
+		#image-input {
+			display: none;
+		}
+
+		#image-label {
+			width: 6em;
+			height: 7em;
+			border: 1px dashed #d1d3e2;
+			cursor: pointer;
+			background-image: url('noimage.png');
+			background-size: cover;
+			background-position: center;
+			float: left;
+		}
+	</style>
+	{{-- end CSS --}}
+@endpush
 
 <div class="card shadow mb-4">
 	<div class="card-header py-1" style="text-align: center;">
@@ -42,12 +62,17 @@
 								<input type="text" class="form-control form-control-sm" required="required" name="nama_produk">
 							</div>
 						</div>
+						{{-- FOTO PRODUK --}}
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Photo Produk</label>
 							<div class="col-sm-10">
-								<input type="file" id="photo_produk" class="form-control form-control-sm" required="required" name="photo_produk" accept="image/*">
+								<label for="image-input" id="image-label">
+									<input type="file" id="image-input" name="photo_produk">
+								</label>
+								<div></div>
 							</div>
 						</div>
+						{{-- end FOTO PRODUK --}}
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Jenis Produk</label>
 							<div class="col-sm-10">
@@ -60,34 +85,46 @@
 								<input type="text" class="form-control form-control-sm" required="required" name="kategori_produk">
 							</div>
 						</div>
-						<div class="form-group row">
-							<label for="inputtext" class="col-sm-2 col-form-label">Barcode</label>
-							<div class="col-sm-10">
-								<input type="number" class="form-control form-control-sm" required="required" name="barcode">
-							</div>
-						</div>
+						<!--<div class="form-group row">-->
+						<!--	<label for="inputtext" class="col-sm-2 col-form-label">Barcode</label>-->
+						<!--	<div class="col-sm-10">-->
+						<!--		<input type="number" class="form-control form-control-sm" required="required" name="barcode">-->
+						<!--	</div>-->
+						<!--</div>-->
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Harga</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control form-control-sm" required="required" name="harga">
+								<input type="text" class="form-control form-control-sm price" required="required" name="harga">
 							</div>
 						</div>
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Modal</label>
 							<div class="col-sm-10">
-								<input type="number" class="form-control form-control-sm" required="required" name="modal">
+								<input type="text" class="form-control form-control-sm price" required="required" name="modal">
 							</div>
 						</div>
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Dimensi</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control form-control-sm" required="required" name="dimensi">
+								{{-- input grup dimensi --}}
+								<div class="input-group">
+									<input type="text" class="form-control form-control-sm" required="required" name="dimensi">
+									<div class="input-group-append">
+										<span class="input-group-text">cm</span>
+									</div>
+								</div>
 							</div>
 						</div>
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Berat</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control form-control-sm" required="required" name="berat">
+								{{-- input grup berat --}}
+								<div class="input-group">
+									<input type="text" class="form-control form-control-sm" required="required" name="berat">
+									<div class="input-group-append">
+										<span class="input-group-text">kg</span>
+									</div>
+								</div>
 							</div>
 						</div>
 						<div class="form-group row">
@@ -99,7 +136,7 @@
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Lokasi Gudang</label>
 							<div class="col-sm-10">
-								<select name="id_inventory" id="lokasi_gudang" class="form-control form-control-sm" required="required" >
+								<select name="lokasi_gudang" id="lokasi_gudang" class="form-control form-control-sm" required="required" >
 									@foreach ($inventory as $role)
 									@if($user ?? null):
 									<option value="{{ $role->lokasi_gudang }}/{{ $role->lokasi_rak }}/{{ $role->lokasi_barisRak }}/{{ $role->lokasi_kolomRak }}" @if ($user->hasRole($role->lokasi_gudang))
@@ -182,4 +219,46 @@
 		</form>
 	</div>
 </div>
+	{{-- SCRIPT --}}
+	@push('script')
+		<script src="/assets/js/jquery.uploadPreview.min.js"></script>
+		<script>
+			// form uploade
+			$.uploadPreview({
+				input_field: '#image-input',
+				preview_box: '#image-label'
+			});
+			// end form upload
+			// masking
+			$('.price').keyup(function (e) {
+				if (e.which >= 37 && e.which <= 40) return;
+				$(this).val(function (index, value) {
+					return value
+						.replace(/\D/g, "")
+						.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+						;
+				});
+				if ($(this).val().match(/^0/)) {
+					$(this).val('');
+					return false;
+				}
+			}).keypress(function (e) {
+				var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+
+				if (!charCode || charCode == 8) {
+					return;
+				}
+
+				var typedChar = String.fromCharCode(charCode);
+
+				if (/\d/.test(typedChar)) {
+					return;
+				}
+
+				return false;
+			});
+			// end masking
+		</script>
+	@endpush
+	{{-- end SCRIPT --}}
 @endsection

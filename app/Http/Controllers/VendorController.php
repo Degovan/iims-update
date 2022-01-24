@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Cp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,7 @@ class VendorController extends Controller
     {
         DB::table('vendor')->where('id_vendor', $request->id_vendor)->update([
             'nama_vendor' => $request->nama_vendor,
+            'email' => $request->email,
             'alamat_vendor' => $request->alamat_vendor,
             'telp' => $request->telp,
             'fax' => $request->fax,
@@ -30,6 +32,13 @@ class VendorController extends Controller
     }
     public function hapus($id_vendor)
     {
+        $isVendorhasCp  = Cp::where('id_vendor', $id_vendor)
+            ->count();
+
+        if($isVendorhasCp > 0) {
+            Cp::where('id_vendor', $id_vendor)->delete();
+        }
+
         DB::table('vendor')->where('id_vendor', $id_vendor)->delete();
         return redirect('/vendor');
     }
@@ -39,6 +48,7 @@ class VendorController extends Controller
         $cari = $request->cari;
         $vendor = DB::table('vendor')
             ->where('nama_vendor', 'like', "%" . $cari . "%")
+            ->where('email', 'like', "%" . $cari . "%")
             ->orWhere('alamat_vendor', 'like', "%" . $cari . "%")
             ->orWhere('telp', 'like', "%" . $cari . "%")
             ->orWhere('fax', 'like', "%" . $cari . "%")
@@ -55,6 +65,7 @@ class VendorController extends Controller
         DB::table('vendor')->insert([
             'nama_vendor' => $request->nama_vendor,
             'alamat_vendor' => $request->alamat_vendor,
+            'email' => $request->email,
             'telp' => $request->telp,
             'fax' => $request->fax,
         ]);

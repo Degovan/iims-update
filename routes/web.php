@@ -13,22 +13,18 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('welcome');
-});
-
-
+// homepage dimasukan dalam kontroller agar sinkron dengan table baru
+Route::get('/', 'HomePageController@index');
 
 Auth::routes();
 //produk
-Route::get('public/produk', 'ProdukController@index')->name('produk');
+Route::get('/produk', 'ProdukController@index')->name('produk');
 Route::get('produk/edit/{id_produk}', 'ProdukController@edit')->name('produkEdit');
 Route::post('produk/update', 'ProdukController@update')->name('produkUpdate');
 Route::get('produk/hapus/{id_produk}', 'ProdukController@hapus')->name('produkHapus');
-Route::get('/produk', 'ProdukController@cari')->name('produkCari');
+Route::get('/produk/cari', 'ProdukController@cari')->name('produkCari');
 Route::get('produk/tambah', 'ProdukController@tambah')->name('produkTambah');
-Route::post('public/produk/simpan', 'ProdukController@simpan')->name('produkSimpan');
+Route::post('/produk/simpan', 'ProdukController@simpan')->name('produkSimpan');
 Route::delete('deleteAll_produk', ['list_unitController@deleteAll'])->name('deleteAll');
 
 
@@ -36,33 +32,45 @@ Route::delete('deleteAll_produk', ['list_unitController@deleteAll'])->name('dele
 
 //vendor
 
-Route::get('public/vendor', 'VendorController@index')->name('vendor');
+Route::get('/vendor', 'VendorController@index')->name('vendor');
 Route::get('vendor/edit/{id_vendor}', 'VendorController@edit')->name('vendorEdit');
 Route::post('vendor/update', 'VendorController@update')->name('vendorUpdate');
 Route::get('vendor/hapus/{id_vendor}', 'VendorController@hapus')->name('vendorHapus');
-Route::get('/vendor', 'VendorController@cari')->name('vendorCari');
+Route::get('/vendor/cari', 'VendorController@cari')->name('vendorCari');
 Route::get('vendor/tambah', 'VendorController@tambah')->name('vendorTambah');
 Route::post('vendor/simpan', 'VendorController@simpan')->name('vendorSimpan');
+
+//cp
+
+Route::get('/cp/{id_vendor}', 'CpController@index')->name('cp');
+Route::get('/cp/tambah/{id_vendor}', 'CpController@create')->name('cpTambah');
+Route::get('/cp/cari/{id_vendor}', 'CpController@search')->name('cpCari');
+Route::get('/cp/edit/{id_cp}', 'CpController@edit')->name('cpEdit');
+Route::get('/cp/hapus/{id_cp}', 'CpController@delete')->name('cpHapus');
+Route::post('/cp/tambah', 'CpController@store')->name('cpSimpan');
+Route::post('/cp/edit/{id_cp}', 'CpController@update')->name('cpUpdate');
+
+
 //user
 Route::resource('/users', UserController::class)->except('show');
 
 //inventory
-Route::get('public/inventory', 'InventoryController@index')->name('inventory');
+Route::get('/inventory', 'InventoryController@index')->name('inventory');
 Route::get('inventory/edit/{id_inventory}', 'InventoryController@edit')->name('inventoryEdit');
 Route::post('inventory/update', 'InventoryController@update')->name('inventoryUpdate');
 Route::get('inventory/hapus/{id_inventory}', 'InventoryController@hapus')->name('inventoryHapus');
-Route::get('/inventory', 'InventoryController@cari')->name('inventoryCari');
+Route::get('/inventory/cari', 'InventoryController@cari')->name('inventoryCari');
 Route::get('inventory/tambah', 'InventoryController@tambah')->name('inventoryTambah');
 Route::post('inventory/simpan', 'InventoryController@simpan')->name('inventorySimpan');
 
 
 
 //customer
-Route::get('public/customer', 'CustomerController@index')->name('customer');
+Route::get('/customer', 'CustomerController@index')->name('customer');
 Route::get('customer/edit/{id_customer}', 'CustomerController@edit')->name('customerEdit');
 Route::post('customer/update', 'CustomerController@update')->name('customerUpdate');
 Route::get('customer/hapus/{id_customer}', 'CustomerController@hapus')->name('customerHapus');
-Route::get('/customer', 'CustomerController@cari')->name('customerCari');
+Route::get('/customer/cari', 'CustomerController@cari')->name('customerCari');
 Route::get('customer/tambah', 'CustomerController@tambah')->name('customerTambah');
 Route::post('/simpan', 'CustomerController@simpan')->name('customerSimpan');
 
@@ -103,6 +111,9 @@ Route::get('otr/edit/{id}', 'DoOtrControllers@update_otr')->name('otrUpdate');
 Route::get('otr/hapus/{id}', 'DoOtrControllers@hapus_otr')->name('otrDelete');
 Route::post('otr/simpan', 'DoOtrControllers@simpan_otr')->name('otrSave');
 
+// edit hompage
+Route::get('/edit-homepage', 'HomePageController@edit');
+Route::post('/edit-homepage', 'HomePageController@update');
 
 
 

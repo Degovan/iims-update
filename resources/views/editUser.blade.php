@@ -47,18 +47,20 @@
 								<input type="text" class="form-control form-control-sm" required="required" name="email" value="{{ $data->email }}">
 							</div>
 						</div>
+						{{-- password tidak wajib --}}
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Password</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control form-control-sm" required="required" name="password" value="{{ $data->password }}">
+								<input type="text" class="form-control form-control-sm" name="password" value="{{ $data->password }}">
 							</div>
 						</div>
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Ulangi Password</label>
 							<div class="col-sm-10">
-								<input type="text" class="form-control form-control-sm" placeholder="ulangi password" required="required" name="ulangi_password">
+								<input type="text" class="form-control form-control-sm" placeholder="ulangi password" name="ulangi_password">
 							</div>
 						</div>
+						{{-- password tidak wajib --}}
 					</td>
 				</tr>
 			</table>

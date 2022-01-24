@@ -38,6 +38,8 @@
 
 						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">Nama Vendor</th>
 
+						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">E-mail</th>
+
 						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">Alamat</th>
 
 						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">Telp.</th>
@@ -58,6 +60,8 @@
 
 						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">Nama Vendor</th>
 
+						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">Email</th></th>
+
 						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">Alamat</th>
 
 						<th style="font-size: 10px;text-align: left;padding: 4px; margin: 2px;">Telp.</th>
@@ -77,6 +81,8 @@
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{$i++}}</td>
 
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{$data -> nama_vendor}}</td>
+						
+						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{$data -> email}}</td>
 
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;">{{$data -> alamat_vendor}}</td>
 
@@ -87,6 +93,8 @@
 						<td style="font-size: 10px;text-align: left;padding: 1px; margin: 2px;"> 
 
 							<a href="{{route('vendorEdit',$data->id_vendor)}}" class="btn btn-success btn-sm" style="font-size: 10px;"><i class="fas fa-pencil-alt"></i>&nbsp;Edit</a>
+
+							<a href="{{route('cp',$data->id_vendor)}}" class="btn btn-info btn-sm" style="font-size: 10px;"><i class="fas fa-user-secret"></i>&nbsp;Cp</a>
 
 							<a href="{{route('vendorHapus',$data->id_vendor)}}" class="btn btn-danger btn-sm" style="font-size: 10px;"><i class="fas fa-trash-alt"></i>&nbsp;Hapus</a>
 

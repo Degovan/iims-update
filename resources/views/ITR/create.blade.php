@@ -42,60 +42,12 @@
                             </div>
                         </div>
 
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Nama Vendor</label>
-                            
-                            <div class="col-sm-9">
-                                <input type="text" name="vendor_name" id="vendor_name" class="form-control form-control-sm">
-                            </div>
-
-                            <div class="col-sm-1 pt-8">
-                                <input type="checkbox" class="checkValidasi" name="valid_itr[]" value="valid_1" id="valid_vendor_name">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Vendor CP</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control form-control-sm" name="cp_vendor" id="cp_vendor">
-                            </div>
-                            <div class="col-sm-1 pt-8">
-                                <input type="checkbox" class="checkValidasi" name="valid_itr[]" value="valid_2" id="valid_vendor_cp">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Produk</label>
-                            <div class="col-sm-9">
-                                <input type="text" name="produk_name" id="produk_name" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-sm-1 pt-8">
-                                <input type="checkbox" class="checkValidasi" name="valid_itr[]" value="valid_3" id="valid_produk">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Qty</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control form-control-sm" required="required" name="qty" id="qty">
-                            </div>
-                            <div class="col-sm-1" style="padding-top: 8px;">
-                                <input type="checkbox" class="checkValidasi" name="valid_itr[]" value="valid_4" id="valid_qty">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="inputtext" class="col-sm-2 col-form-label">Harga</label>
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control form-control-sm" required="required" name="harga" id="harga">
-                            </div>
-                            <div class="col-sm-1 pt-8">
-                                <input type="checkbox" class="checkValidasi" name="valid_itr[]" value="valid_5" id="valid_harga">
-                            </div>
+                        <div id="prReview">
                         </div>
                         <div class="form-group row" style="float: right;">
                             <label for="inputtext" class="col-sm-2 col-form-label"></label>
                             <div class="col-sm-4" style="padding-right: 50px;">
                                 <button type="submit" class="btn btn-outline-primary btn-sm" value="0" name="simpan" id="btn-simpan"><i class="fas fa-save">&nbsp;Simpan</i></button>
-                            </div>
-                            <div class="col-sm-4">
-                                <button type="submit" class="btn btn-outline-success btn-sm" value="1" name="simpan" id="btn-approve"><i class="fas fa-check-circle">&nbsp;Approve</i></button>
                             </div>
                         </div>
                     </td>
@@ -109,10 +61,7 @@
 @section('javascript')
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#btn-approve").attr("disabled", true);
         $('#nomor_pr').select2();
-        $('#produk_id').select2();
-        isCheked();
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -120,21 +69,9 @@
         });
     });
 
-    function isCheked() {
-        $(".checkValidasi").change(function() {
-            if ($('.checkValidasi:checked').length == $('.checkValidasi').length) {
-                $("#btn-approve").attr("disabled", false);
-                $("#btn-simpan").attr("disabled", true);
-            } else {
-                $("#btn-approve").attr("disabled", true);
-                $("#btn-simpan").attr("disabled", false);
-            }
-        });
-    }
-
     function getDetailPr() {
 
-        var table = "purchase_request";
+        var table = "list_pr";
         var id = $("#nomor_pr").val();
 
         if (id != "") {
@@ -148,17 +85,42 @@
                     _token: "{{csrf_token()}}"
                 },
                 success: function(data) {
-                    console.log(data);
-                    $("#cp_vendor").val(data.telp);
-                    $("#vendor_name").val(data.nama_vendor);
-                    $("#produk_name").val(data.nama_produk);
-                    
-                    $("#harga").val(data.harga);
-                    $("#harga_temp").val(data.harga);
+                    $('#prReview').html();
 
-                    $("#qty").val(data.qty);
-                    $("#qty_temp").val(data.qty);
+                    $('#prReview').append(`
+                        <table class="table">
+                            <thead>
+                                <th>No.</th>
+                                <th>Produk</th>
+                                <th>Qty</th>
+                                <th>Harga</th>
+                                <th>Catatan</th>
+                                <th>Vendor</th>
+                                <th>Aksi</th>
+                            </thead>
+                            <tbody id="listPr"></tbody>
+                        </table>
+                    `);
 
+                    $.each(data, function(index, key) {
+                        if(key.is_checked == 1) {
+                            var is_checked = `<input type="checkbox" class="checkValidasi" name="prr_id[]" value="${key.id}" checked>`;
+                        } else {
+                            var is_checked = `<input type="checkbox" class="checkValidasi" name="prr_id[]" value="${key.id}">`;
+                        }
+
+                        $('#listPr').append(`
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${key.nama_produk}</td>
+                                <td>${key.qty}</td>
+                                <td>${key.qty * key.harga}</td>
+                                <td>${key.note}</td>
+                                <td>${key.nama_vendor}</td>
+                                <td>${is_checked}</td>
+                            </tr>
+                        `);
+                    })
                 },
                 error: function(e) {
                     console.log(e);
@@ -167,31 +129,6 @@
         } else {
             return false;
         }
-    }
-
-    function cekValidasi() {
-
-        var qty = $("#qty").val();
-        var qty_temp = $("#qty_temp").val();
-        
-        var harga = $("#harga").val();
-        var harga_temp = $("#harga_temp").val();
-
-        
-        if (qty != qty_temp) {
-            $("#valid_qty").attr("disabled", true);
-            $("#valid_qty").prop('checked', false);                    
-        } else {
-            $("#valid_qty").attr("disabled", false);
-        }
-        
-        if (harga != harga_temp) {
-            $("#valid_harga").attr("disabled", true);
-            $("#valid_harga").prop('checked', false);                    
-        } else {
-            $("#valid_harga").attr("disabled", false);
-        }
-
     }
 </script>
 @endsection

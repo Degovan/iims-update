@@ -195,7 +195,7 @@ class DoOtrControllers extends Controller
         $otr = DB::table('otr')->where("id", $id)->first();
         $otr->valid_otr = explode(";", $otr->valid_otr);
         $do = DB::table('deliveri_order')->select('id', 'no_do')->where('id', $otr->id_do)->get();
-        return view("otr.edit", ['otr' => $otr, 'do' => $do]);
+        return view("OTR.edit", ['otr' => $otr, 'do' => $do]);
     }
 
     public function hapus_otr($id)
