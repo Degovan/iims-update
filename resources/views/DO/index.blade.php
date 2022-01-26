@@ -34,6 +34,7 @@
                         <th>Qty</th>
                         <th>Catatan</th>
                         <th>Created By</th>
+                        <th>Status</th>
                         <th class="center-dt">Aksi</th>
                     </tr>
                 </thead>
@@ -48,6 +49,7 @@
                         <th>Qty</th>
                         <th>Catatan</th>
                         <th>Created By</th>
+                        <th>Status</th>
                         <th class="center-dt">Aksi</th>
                     </tr>
                 </tfoot>
@@ -62,6 +64,7 @@
                         <td>{{$data->qty}}</td>
                         <td>{{$data->catatan}}</td>
                         <td>{{$data->created_by}}</td>
+                        <td>{{($data->flag) ? 'Selesai' : 'Aktif'}}</td>
                         <td class="center-dt">
                             <a href="{{ route('deliveryUpdate',$data->id) }}" class="btn btn-outline-success btn-sm" style="font-size: 10px;"><i class="fas fa-pencil-alt"></i>&nbsp;Edit</a>
                             <a href="{{ URL::to('delivery_order/cetak/'.$data->id.'/do') }}" class="btn btn-outline-primary btn-sm" style="font-size: 10px;" target="_blank"><i class="fa fa-print"></i>&nbsp;Print</a>                      

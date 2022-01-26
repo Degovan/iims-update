@@ -25,7 +25,7 @@ class DoOtrControllers extends Controller
                     ->orWhere('u.name', 'LIKE', '%' . $cari . '%')
                     ->orWhere('p.qty', 'LIKE', '%' . $cari . '%');
             })
-            ->select('do.id', 'do.catatan', 'do.no_do', 'do.tanggal_do', "p.nama_produk", "p.qty", "p.harga", "c.nama_customer", "c.telepon", "u.name as created_by")
+            ->select('do.id', 'do.catatan', 'do.no_do', 'do.tanggal_do', "p.nama_produk", "p.qty", "do.flag", "p.harga", "c.nama_customer", "c.telepon", "u.name as created_by")
             ->get();
 
         foreach ($data as $key => $value) {
