@@ -53,6 +53,9 @@
                             <td>{{$data -> total}}</td>
                             <td>{{$data -> status == 0 ? 'Aktif' : 'Selesai'}}</td>
                             <td class="center-dt">
+                                <button class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#modalDetail{{ $data->id }}" style="font-size: 10px">
+                                    <i class="fas fa-exclamation-circle"></i>&nbsp;Detail
+                                </button>
                                 <a href="{{ route('updatePr',$data->id) }}" class="btn btn-outline-success btn-sm" style="font-size: 10px;"><i class="fas fa-pencil-alt"></i>&nbsp;Edit</a>
                                 <a href="{{ URL::to('purchase/cetak/'.$data->id.'/pr') }}" class="btn btn-outline-primary btn-sm" style="font-size: 10px;" target="_blank"><i class="fa fa-print"></i>&nbsp;Print</a>
                                 <a href="purchase/hapus/{{$data->id}}" class="btn btn-outline-danger btn-sm" style="font-size: 10px;"><i class="fas fa-trash-alt"></i>&nbsp;Hapus</a>
@@ -64,4 +67,95 @@
         </div>
     </div>
 </div>
+
+{{-- Detail Form --}}
+@foreach ($pr as $p)
+<div class="modal fade" id="modalDetail{{ $p->id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Detail Data PR</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row my-3">
+                    <div class="col-6">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text">No. PR</span>
+                            </div>
+                            <input type="text" name="nomor_pr" class="form-control form-control-sm" value="{{ $p->no_pr }}" readonly>
+                          </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Tanggal</span>
+                            </div>
+                            <input type="text" class="form-control form-control-sm" value="{{ $p->tanggal }}" readonly>
+                          </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text">Req. By</span>
+                            </div>
+                            <input type="text" class="form-control form-control-sm"  value="{{ $p->created_name }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text">Acc. By</span>
+                            </div>
+                            <input type="text" class="form-control form-control-sm"  value="{{ $p->acc_name ?? '-' }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="vendor_wrap" data-number="0">
+                    <table class="table" id="productTable0" data-number="0">
+                        <thead>
+                            <th width="3%">No</th>
+                            <th width="20%">Produk</th>
+                            <th width="7%">Qty</th>
+                            <th>Harga</th>
+                            <th>Catatan</th>
+                        </thead>
+                        <tbody class="product_wrap" data-number="0" data-vendor="0">
+                            @foreach($p->products as $product)
+                            <tr>
+                                <td>{{ $loop->index + 1 }}</td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" value="{{ $product->nama_produk }}" readonly>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" value="{{ $product->qty }}" readonly>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" value="{{ $product->harga }}" readonly>
+                                </td>
+                                <td>
+                                    <textarea class="form-control form-control-sm" readonly>{{ $product->note }}</textarea>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-group">
+                    <div class="form-group">
+                        <label for="main_note" class="col-sm-2 col-form-label">Catatan Utama</label>
+                        <textarea class="form-control" readonly>{{ $p->note }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
 @endsection

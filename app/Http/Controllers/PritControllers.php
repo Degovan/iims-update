@@ -17,6 +17,9 @@ class PritControllers extends Controller
         $cari = $request->cari;
 
         $data = DB::table('purchase_request as pr')
+            ->leftJoin('users as cr', 'pr.created_by', '=', 'cr.id')
+            ->leftJoin('users as acc', 'pr.acc_by', '=', 'acc.id')
+            ->select('pr.*', 'cr.name as created_name', 'acc.name as acc_name')
             ->where(function ($data) use ($cari) {
                 if (!empty($cari)) {
                     $data->where('pr.no_pr', 'LIKE', '%' . $cari . '%')
@@ -24,6 +27,16 @@ class PritControllers extends Controller
                 }
             })
             ->get();
+
+        $data = array_map(function($pr) {
+            $products = DB::table('purchase_request_products as pd')
+                ->rightJoin('produk', 'pd.product_id', '=', 'produk.id_produk')
+                ->select('*')
+                ->where('pr_id', $pr->id)
+                ->get()->toArray();
+
+            return (object) array_merge((array)$pr, ['products' => $products]);
+        }, $data->toArray());
 
         return view('PR.index', ['pr' => $data]);
     }
