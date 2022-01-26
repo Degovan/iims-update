@@ -1,18 +1,24 @@
 @extends('shared.base')
-@section('content')
-	{{-- CSS --}}
-	@push('style')
-		<style>
-			#background-label {
-				float: left;
-			}
+@push('style')
+<style>
+	.image-input {
+		display: none;
+	}
 
-			#logo-label {
-				float: left;
-			}
-		</style>
-	@endpush
-	{{-- CSS --}}
+	.image-label {
+		width: 6em;
+		height: 7em;
+		border: 1px dashed #d1d3e2;
+		cursor: pointer;
+		background-image: url('noimage.png');
+		background-size: cover;
+		background-position: center;
+		float: left;
+	}
+</style>
+@endpush
+
+@section('content')
 <div class="card shadow mb-4 mt-2">
 	<div class="card-header py-1" style="text-align: center; background-color: #f4f4f4;">
 		<h7 class="m-0 font-weight-bold text-primary">Edit Homepage</h7>
@@ -37,9 +43,9 @@
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Background</label>
 							<div class="col-sm-10">
-                                <label for="background-input" class="image-label" id="background-label">
-                                    <input type="file" class="image-input" id="background-input" name="background">
-                                </label>
+								<label for="background-input" class="image-label" id="background-label" style="background-image: url('/assets/images/{{ $data->background }}')">
+									<input type="file" class="image-input" id="background-input" name="background">
+								</label>
 							</div>
 						</div>
 						{{-- end FOTO BACKGOUND --}}
@@ -47,9 +53,9 @@
 						<div class="form-group row">
 							<label for="inputtext" class="col-sm-2 col-form-label">Logo</label>
 							<div class="col-sm-10">
-                                <label for="logo-input" class="image-label" id="logo-label">
-                                    <input type="file" class="image-input" id="logo-input" name="logo">
-                                </label>
+								<label for="logo-input" class="image-label" id="logo-label" style="background-image: url('/assets/images/{{ $data->logo }}')">
+										<input type="file" class="image-input" id="logo-input" name="logo">
+								</label>
 							</div>
 						</div>
 						{{-- end FOTO LOGO --}}
@@ -91,3 +97,19 @@
 	</div>
 </div>
 @endsection
+
+@push('script')
+<script src="/assets/js/jquery.uploadPreview.min.js"></script>
+<script>
+	$('.image-input').change(e => {
+		const parentEl = $(e.target).parent();
+		const reader = new FileReader();
+
+		reader.onload = () => {
+			parentEl.css('background-image', `url(${reader.result})`);
+		}
+
+		reader.readAsDataURL(e.target.files[0]);
+	});
+</script>
+@endpush
