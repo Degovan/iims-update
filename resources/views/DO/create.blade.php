@@ -14,7 +14,7 @@
             <div class="clearfix"></div>
             <div class="row my-3">
                 <div class="col-6">
-                    <div class="input-group input-group-sm mb-3">
+                    <div class="input-group mb-3">
                         <div class="input-group-prepend">
                           <span class="input-group-text">No. DO</span>
                         </div>
@@ -22,7 +22,7 @@
                       </div>
                 </div>
                 <div class="col-6">
-                    <div class="input-group input-group-sm mb-3">
+                    <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text">Tanggal</span>
                         </div>
@@ -30,7 +30,7 @@
                       </div>
                 </div>
                 <div class="col-6">
-                    <div class="input-group input-group-sm mb-3">
+                    <div class="input-group mb-3">
                         <div class="input-group-prepend">
                           <span class="input-group-text">Order By</span>
                         </div>
@@ -42,7 +42,7 @@
             <div class="vendor_wrap" data-number="0">
                 <div class="row">
                     <div class="col-6">
-                        <div class="input-group input-group-sm mb-3">
+                        <div class="input-group mb-3">
                             <div class="input-group-prepend">
                               <span class="input-group-text">Nama Customer</span>
                             </div>
@@ -55,7 +55,7 @@
                           </div>
                     </div>
                     <div class="col-6">
-                        <div class="input-group input-group-sm mb-3">
+                        <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Contact Person</span>
                             </div>
@@ -64,28 +64,40 @@
                     </div>
                 </div>
             </div>
-            <div class="row my-3">
-                <div class="col-6">
-                    <div class="input-group input-group-sm mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">Produk</span>
-                        </div>
-                        <select name="produk_id" id="produk_id" class="form-control form-control-sm" required onchange="getVendor('produk')">
-                            <option value=""></option>
-                            @foreach ($produk as $p)
-                            <option value="{{$p->id_produk}}">{{$p->nama_produk}}</option>
-                            @endforeach
-                        </select>
-                      </div>
-                </div>
-                <div class="col-6">
-                    <div class="input-group input-group-sm mb-3">
-                        <div class="input-group-prepend">
-                          <span class="input-group-text">Qty</span>
-                        </div>
-                        <input type="number" class="form-control form-control-sm" required="required" name="qty" id="qty" readonly>
-                    </div>
-                </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="text-left">No</th>
+                            <th class="text-left">Produk</th>
+                            <th class="text-left" width="10%">Qty</th>
+                            <th class="text-left">Harga Satuan</th>
+                            <th class="text-left">Harga Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>
+                                <select name="produk_id" id="produk_id" class="form-control form-control-sm" required onchange="getVendor('produk')">
+                                    <option value="">--- PILIH PRODUK ---</option>
+                                    @foreach ($produk as $p)
+                                    <option value="{{$p->id_produk}}">{{$p->nama_produk}}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" required="required" name="qty" id="qty" readonly>
+                            </td>
+                            <td>
+                                <input type="number" id="harga-satuan" class="form-control" readonly>
+                            </td>
+                            <td>
+                                <input type="number" id="harga-total" class="form-control" readonly>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div class="form-group">
                 <div class="form-group">
@@ -108,8 +120,8 @@
 @section('javascript')
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#customer_id').select2();
-        $('#produk_id').select2();
+        // $('#customer_id').select2();
+        // $('#produk_id').select2();
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -145,6 +157,8 @@
                     if (table == 'produk') {
                         //  $("#harga").val(data.harga);
                         $("#qty").val(data.qty);
+                        $('#harga-satuan').val(data.harga);
+                        $('#harga-total').val(data.harga * data.qty);
                     }
                 },
                 error: function(e) {
