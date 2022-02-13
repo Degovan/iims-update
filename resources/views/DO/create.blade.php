@@ -73,10 +73,11 @@
                             <th class="text-left" width="10%">Qty</th>
                             <th class="text-left">Harga Satuan</th>
                             <th class="text-left">Harga Total</th>
+                            <th class="text-left">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
+                        <tr id="prod-show" class="d-none">
                             <td>1</td>
                             <td>
                                 <select name="produk_id" id="produk_id" class="form-control form-control-sm" required onchange="getVendor('produk')">
@@ -94,6 +95,23 @@
                             </td>
                             <td>
                                 <input type="number" id="harga-total" class="form-control" readonly>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" id="btn-rm-product" type="button">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr id="prod-hide">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-primary" id="btn-add-product" type="button">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -127,6 +145,26 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+    });
+
+    $('#btn-add-product').click(function(e) {
+        e.preventDefault();
+
+        $('#prod-show').removeClass('d-none');
+        $('#prod-hide').addClass('d-none');
+    });
+
+    $('#btn-rm-product').click(function(e) {
+        e.preventDefault();
+
+        // Reset all value
+        $('#produk_id').val('');
+        $('#qty').val('');
+        $('#harga-satuan').val('');
+        $('#harga-total').val('');
+
+        $('#prod-hide').removeClass('d-none');
+        $('#prod-show').addClass('d-none');
     });
 
     function getVendor(table) {
