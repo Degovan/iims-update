@@ -42,7 +42,7 @@
             <div class="vendor_wrap" data-number="0">
                 <div class="row">
                     <div class="col-6">
-                        <div class="input-group mb-3">
+                        <div class="input-group mb-3 d-none" id="cp-element">
                             <div class="input-group-prepend">
                               <span class="input-group-text">Nama Customer</span>
                             </div>
@@ -60,6 +60,9 @@
                                 <span class="input-group-text">Contact Person</span>
                             </div>
                             <input type="text" class="form-control form-control-sm cp_vendor" name="cp_customer" id="cp_customer" readonly>
+                            <button type="button" class="btn btn-primary" id="btn-add-cp">
+                                <i class="fas fa-plus"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -152,6 +155,27 @@
 
         $('#prod-show').removeClass('d-none');
         $('#prod-hide').addClass('d-none');
+    });
+
+    $('#btn-add-cp').click(function(e) {
+        const button = $(this);
+
+        $('#cp-element').toggleClass('d-none');
+        button.toggleClass('btn-primary');
+        button.toggleClass('btn-danger');
+
+        if(button.hasClass('btn-danger')) {
+            button.html(`
+                <i class="fas fa-times"></i>
+            `);
+        } else {
+            button.html(`
+                <i class="fas fa-plus"></i>
+            `);
+        }
+
+        $('#cp_customer').val('');
+        $('#customer_id').val('');
     });
 
     $('#btn-rm-product').click(function(e) {
